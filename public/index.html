@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inkwell — PDF Studio · Online</title>
+<meta name="description" content="Inkwell online — organize, fill forms, sign, protect, watermark and optimize PDFs right in your browser. Files are processed by an isolated serverless function and never stored anywhere." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ef4444'/%3E%3Cstop offset='1' stop-color='%23b91c1c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Cpath d='M50 12c-12 16-20 26-20 38a20 20 0 0 0 40 0c0-12-8-22-20-38z' fill='%23fff' opacity='.95'/%3E%3Ccircle cx='50' cy='58' r='6' fill='%23ef4444'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<!-- ══════════ TOP BAR ══════════ -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f87171"/><stop offset="1" stop-color="#dc2626"/>
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" rx="24" fill="url(#bm)"/>
+        <path d="M50 13c-12.5 16.5-20.5 27-20.5 39a20.5 20.5 0 0 0 41 0C70.5 40 62.5 29.5 50 13z" fill="#7f1d1d" opacity=".25"/>
+        <path d="M50 13c-12.5 16.5-20.5 27-20.5 39a20.5 20.5 0 0 0 41 0C70.5 40 62.5 29.5 50 13z" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" fill="none"/>
+        <path d="M50 44v22" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="brand-word">
+      <span class="brand-name">Inkwell</span>
+      <span class="brand-tag">PDF STUDIO</span>
+    </div>
+  </div>
+
+  <div class="doc-chip" id="docChip" hidden>
+    <button class="doc-chip-name" id="docChipName" title="Double-click to rename">document.pdf</button>
+    <div class="doc-chip-meta">
+      <span id="docChipPages">0 pages</span><span class="dot">•</span><span id="docChipSize">0 KB</span>
+      <span class="lock-badge" id="lockBadge" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Encrypted
+      </span>
+    </div>
+  </div>
+
+  <div class="top-actions">
+    <button class="icon-btn" id="btnNewDoc" title="Open another PDF">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      <span>New</span>
+    </button>
+    <button class="icon-btn" id="btnUndo" title="Undo last change (Ctrl+Z)" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M4 9h9.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <span>Undo</span>
+    </button>
+    <button class="icon-btn danger" id="btnDeleteDoc" title="Close and delete this document from Inkwell" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <span>Delete</span>
+    </button>
+    <button class="btn-primary" id="btnDownload" title="Download the edited PDF (Ctrl+D)" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download PDF
+    </button>
+  </div>
+</header>
+
+<!-- ══════════ LAYOUT ══════════ -->
+<div class="layout">
+
+  <!-- ── tool rail ── -->
+  <nav class="rail" id="rail" aria-label="Tools"></nav>
+
+  <!-- ── workspace ── -->
+  <main class="workspace" id="workspace">
+
+    <!-- empty state / dropzone -->
+    <section class="empty-state" id="emptyState">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Open a PDF file">
+        <div class="dz-glow"></div>
+        <div class="dz-icon">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M32 8C22.5 21.5 15 30.8 15 41.7a17 17 0 0 0 34 0C49 30.8 41.5 21.5 32 8z" stroke="url(#dzg)" stroke-width="3.4" stroke-linejoin="round"/>
+            <path d="M32 28v18" stroke="url(#dzg)" stroke-width="3.4" stroke-linecap="round"/>
+            <circle cx="32" cy="46.5" r="2.4" fill="url(#dzg)"/>
+            <defs><linearGradient id="dzg" x1="15" y1="8" x2="49" y2="56"><stop stop-color="#f87171"/><stop offset="1" stop-color="#dc2626"/></linearGradient></defs>
+          </svg>
+        </div>
+        <h1 class="dz-title">Open a <span class="grad-text">PDF</span>, shape it, take it with you.</h1>
+        <p class="dz-sub">Drop a file here, or pick one from disk. Your PDF is never stored — edits are computed by an isolated serverless function and the file simply vanishes when you close the tab. Up to ~4 MB per file.</p>
+        <div class="dz-actions">
+          <button class="btn-primary lg" id="btnBrowse">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Browse files
+          </button>
+          <button class="btn-ghost lg" id="btnSample">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Try the sample PDF
+          </button>
+        </div>
+        <p class="dz-foot">Merge · Split · AcroForm filling · E-sign · AES-256 encryption · Watermarks · Optimize</p>
+        <input type="file" id="fileInput" accept="application/pdf,.pdf" hidden />
+      </div>
+
+    </section>
+
+    <!-- document view -->
+    <section class="doc-view hidden" id="docView">
+      <div class="doc-toolbar">
+        <label class="select-all" for="checkAll">
+          <input type="checkbox" id="checkAll" />
+          <span id="selectAllLabel">Select all</span>
+        </label>
+        <span class="selection-count" id="selectionCount">0 selected</span>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" id="btnRotateCCW" title="Rotate selected 90° counter-clockwise">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
+        <button class="tb-btn" id="btnRotateCW" title="Rotate selected 90° clockwise">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="tb-btn" id="btnDeletePages" title="Delete selected pages" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        <button class="tb-btn wide" id="btnExtractPages" title="Extract selected pages into a new PDF" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Extract
+        </button>
+        <div class="tb-sep"></div>
+        <div class="zoom-group" role="group" aria-label="Zoom pages">
+          <button class="tb-btn" id="btnZoomOut" title="Zoom out (Ctrl−)" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <button class="zoom-label" id="zoomLabel" title="Reset to fit the screen (Ctrl+0)">Fit</button>
+          <button class="tb-btn" id="btnZoomIn" title="Zoom in (Ctrl+)" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <button class="tb-btn" id="btnZoomFit" title="Fit page to screen (Ctrl+0)" aria-label="Fit to screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5"/><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M16 21h5v-5"/></svg></button>
+        </div>
+        <div class="tb-spacer"></div>
+        <span class="drag-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+          Drag pages to reorder
+        </span>
+        <span class="page-total" id="pageTotal">1 / 1</span>
+      </div>
+      <div class="pages-scroll" id="pagesScroll">
+        <div class="pages-grid" id="pagesGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── contextual tool panel ── -->
+  <aside class="panel" id="panel" aria-label="Tool options"></aside>
+</div>
+
+<!-- ══════════ SIGNATURE MODAL ══════════ -->
+<div class="modal-overlay" id="sigModal" role="dialog" aria-modal="true" aria-label="Create signature" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Create your signature</h2>
+      <button class="icon-btn ghost" id="sigClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-tabs" role="tablist">
+      <button class="modal-tab active" id="tabDraw" role="tab">Draw</button>
+      <button class="modal-tab" id="tabType" role="tab">Type</button>
+    </div>
+
+    <!-- draw pane -->
+    <div class="sig-pane" id="paneDraw">
+      <div class="canvas-wrap">
+        <canvas id="sigCanvas" width="1040" height="380"></canvas>
+        <div class="canvas-baseline"></div>
+        <span class="canvas-placeholder" id="canvasPlaceholder">Sign here</span>
+      </div>
+      <div class="sig-controls">
+        <div class="ink-colors" id="inkColors">
+          <button class="ink-dot active" data-color="#17203a" style="--ink:#17203a" aria-label="Ink black"></button>
+          <button class="ink-dot" data-color="#1d3fbe" style="--ink:#1d3fbe" aria-label="Ink blue"></button>
+          <button class="ink-dot" data-color="#c22e2e" style="--ink:#c22e2e" aria-label="Ink red"></button>
+          <button class="ink-dot" data-color="#0e6e4e" style="--ink:#0e6e4e" aria-label="Ink green"></button>
+        </div>
+        <label class="stroke-label">Stroke
+          <input type="range" id="strokeWidth" min="2" max="9" step="0.5" value="4" />
+        </label>
+        <button class="btn-ghost sm" id="sigClear">Clear</button>
+      </div>
+    </div>
+
+    <!-- type pane -->
+    <div class="sig-pane hidden" id="paneType">
+      <input class="text-input lg" id="sigTypeInput" type="text" placeholder="Type your name…" maxlength="60" autocomplete="off" spellcheck="false" />
+      <div class="font-cards" id="fontCards"></div>
+      <div class="sig-controls">
+        <div class="ink-colors" id="inkColorsType">
+          <button class="ink-dot active" data-color="#17203a" style="--ink:#17203a" aria-label="Ink black"></button>
+          <button class="ink-dot" data-color="#1d3fbe" style="--ink:#1d3fbe" aria-label="Ink blue"></button>
+          <button class="ink-dot" data-color="#c22e2e" style="--ink:#c22e2e" aria-label="Ink red"></button>
+          <button class="ink-dot" data-color="#0e6e4e" style="--ink:#0e6e4e" aria-label="Ink green"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-ghost" id="sigCancel">Cancel</button>
+      <button class="btn-primary" id="sigUse">
+        Use this signature
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PASSWORD-FOR-UPLOAD MODAL ══════════ -->
+<div class="modal-overlay" id="pwModal" role="dialog" aria-modal="true" aria-label="PDF password required" hidden>
+  <div class="modal slim">
+    <div class="modal-head">
+      <h2>This PDF is protected</h2>
+    </div>
+    <p class="modal-copy">Inkwell needs the password to open <strong id="pwFileName">file.pdf</strong>. It is used only to unlock and re-secure the file during this session — it is never written down or stored anywhere.</p>
+    <input class="text-input lg" id="pwInput" type="password" placeholder="Password" autocomplete="off" />
+    <p class="modal-error" id="pwError" hidden></p>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="pwCancel">Cancel</button>
+      <button class="btn-primary" id="pwSubmit">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PLACEMENT BAR ══════════ -->
+<div class="place-bar" id="placeBar" hidden>
+  <span class="place-bar-text">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6-6-6"/><path d="M13 5h8M13 12h8M13 19h8"/></svg>
+    Click any page to stamp your signature — drag to move, corner to resize
+  </span>
+  <label class="place-all" for="placeAllPages">
+    <input type="checkbox" id="placeAllPages" /> All pages
+  </label>
+  <button class="btn-ghost sm light" id="placeDone">Done</button>
+</div>
+
+<!-- ══════════ INLINE EDITOR ══════════ -->
+<div class="editor-overlay hidden" id="editorOverlay" role="dialog" aria-modal="true" aria-label="Page editor">
+  <div class="editor-topbar">
+    <div class="ed-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4.5 1L4.5 14.5 16.5 3.5z"/></svg>
+      <strong>Edit page <span id="edPageNum">1</span></strong>
+      <span class="ed-page-total" id="edPageTotal">/ 1</span>
+    </div>
+    <div class="ed-nav">
+      <button class="ed-btn" id="edPrev" aria-label="Previous page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Prev
+      </button>
+      <button class="ed-btn" id="edNext" aria-label="Next page">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+    </div>
+    <div class="ed-modes" role="tablist" aria-label="Editor mode">
+      <button class="ed-mode active" id="edModeSelect" data-mode="select" role="tab">Edit text</button>
+      <button class="ed-mode" id="edModeAddText" data-mode="addtext" role="tab">+ Text</button>
+      <button class="ed-mode" id="edModeAddImage" data-mode="addimage" role="tab">+ Image</button>
+    </div>
+    <div class="ed-spacer"></div>
+    <button class="btn-ghost sm" id="edCancel">Close</button>
+    <button class="btn-primary" id="edApply">
+      Apply changes
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>
+    </button>
+    <button class="icon-btn ghost ed-close" id="edClose" aria-label="Close editor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="editor-toolbar" id="editorToolbar">
+    <div class="ed-group" id="edTextTools" hidden>
+      <select id="edFontFamily" class="ed-select" title="Font family — proprietary faces are shown with their open substitute after an em dash" aria-label="Font family">
+        <option value="arial" class="opt-arial">Arial — Arimo</option>
+        <option value="helvetica" class="opt-helvetica">Helvetica — Nimbus Sans</option>
+        <option value="times-new-roman" class="opt-times-new-roman">Times New Roman — Tinos</option>
+        <option value="calibri" class="opt-calibri">Calibri — Carlito</option>
+        <option value="roboto" class="opt-roboto">Roboto</option>
+        <option value="open-sans" class="opt-open-sans">Open Sans</option>
+        <option value="georgia" class="opt-georgia">Georgia — Gelasio</option>
+        <option value="verdana" class="opt-verdana">Verdana — DejaVu Sans</option>
+        <option value="garamond" class="opt-garamond">Garamond — EB Garamond</option>
+        <option value="montserrat" class="opt-montserrat">Montserrat</option>
+        <option value="futura" class="opt-futura">Futura — Jost</option>
+        <option value="lato" class="opt-lato">Lato</option>
+        <option value="segoe-ui" class="opt-segoe-ui">Segoe UI — Selawik</option>
+        <option value="cambria" class="opt-cambria">Cambria — Caladea</option>
+        <option value="courier-new" class="opt-courier-new">Courier New — Cousine</option>
+        <option value="tahoma" class="opt-tahoma">Tahoma — PT Sans</option>
+        <option value="trebuchet-ms" class="opt-trebuchet-ms">Trebuchet MS — Fira Sans</option>
+        <option value="century-gothic" class="opt-century-gothic">Century Gothic — League Spartan</option>
+        <option value="gill-sans" class="opt-gill-sans">Gill Sans — Alegreya Sans</option>
+        <option value="franklin-gothic" class="opt-franklin-gothic">Franklin Gothic — Libre Franklin</option>
+        <option value="palatino-linotype" class="opt-palatino-linotype">Palatino Linotype — TeX Gyre Pagella</option>
+        <option value="book-antiqua" class="opt-book-antiqua">Book Antiqua — P052</option>
+        <option value="impact" class="opt-impact">Impact — Anton</option>
+        <option value="comic-sans-ms" class="opt-comic-sans-ms">Comic Sans MS — Comic Neue</option>
+        <option value="lucida-console" class="opt-lucida-console">Lucida Console — DejaVu Sans Mono</option>
+        <option value="consolas" class="opt-consolas">Consolas — Inconsolata</option>
+        <option value="inter" class="opt-inter">Inter</option>
+        <option value="poppins" class="opt-poppins">Poppins</option>
+        <option value="source-sans-pro" class="opt-source-sans-pro">Source Sans Pro</option>
+        <option value="playfair-display" class="opt-playfair-display">Playfair Display</option>
+        <option value="merriweather" class="opt-merriweather">Merriweather</option>
+        <option value="ocr-a" class="opt-ocr-a">OCR-A</option>
+        <option value="ocr-b" class="opt-ocr-b">OCR-B</option>
+        <option value="ocr-a-extended" class="opt-ocr-a-extended">OCR A Extended — OCR-A design</option>
+        <option value="micr-cmc-7" class="opt-micr-cmc-7">MICR CMC-7</option>
+        <option value="farrington-7b" class="opt-farrington-7b">Farrington 7B — digits + MICR symbols</option>
+      </select>
+      <span class="ed-font-preview f-helvetica" id="edFontPreview" aria-hidden="true" title="Live preview of the selected font">AaBb Gg 0123</span>
+      <label class="ed-size" title="Font size">
+        <input type="number" id="edFontSize" min="4" max="120" step="1" value="12" aria-label="Font size in points" />
+        <span>pt</span>
+      </label>
+      <input type="color" id="edColor" value="#111111" title="Text colour" aria-label="Text colour" />
+      <button class="ed-toggle" id="edBold" title="Bold" aria-pressed="false"><b>B</b></button>
+      <button class="ed-toggle" id="edItalic" title="Italic" aria-pressed="false"><i>I</i></button>
+    </div>
+    <div class="ed-group" id="edImageTools" hidden>
+      <button class="ed-btn" id="edRotL" title="Rotate 15° counter-clockwise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        15°
+      </button>
+      <button class="ed-btn" id="edRotR" title="Rotate 15° clockwise">
+        15°
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="ed-btn" id="edLayer" title="Toggle in front of text / behind text">Send behind text</button>
+    </div>
+    <div class="ed-spacer"></div>
+    <button class="ed-toggle danger" id="edDelete" title="Delete selected">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Delete
+    </button>
+  </div>
+
+  <div class="editor-stage" id="editorStage" data-mode="select">
+    <div class="editor-page" id="editorPage">
+      <img id="editorPageImg" alt="Page being edited" draggable="false" />
+      <div class="editor-layer" id="editorLayer"></div>
+    </div>
+  </div>
+  <div class="editor-hint" id="editorHint">Click any existing text and type to replace it — or use “Add text” to click anywhere and type anew.</div>
+  <input type="file" id="editorImageInput" accept="image/png,image/jpeg" hidden />
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

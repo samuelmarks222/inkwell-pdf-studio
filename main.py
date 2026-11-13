@@ -1,21 +1,10 @@
-"""FastAPI entrypoint for Vercel."""
+"""Vercel FastAPI entrypoint — re-exports the application from api/index.py.
 
-from fastapi import FastAPI
+Vercel's FastAPI zero-config detection looks for `main:app` at the project
+root. The application itself lives in api/index.py (same module the local
+tooling and connector deploys use).
+"""
 
-app = FastAPI(
-    title="Inkwell PDF Studio",
-    description="The API for Inkwell PDF Studio.",
-    version="0.1.0",
-)
+from api.index import app
 
-
-@app.get("/")
-def read_root() -> dict[str, str]:
-    """Return a small welcome response for the deployed service."""
-    return {"name": "Inkwell PDF Studio", "status": "ok"}
-
-
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    """Expose a lightweight health check for deployment monitoring."""
-    return {"status": "ok"}
+__all__ = ["app"]
