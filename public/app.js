@@ -1620,10 +1620,38 @@ function edLayout() {
 }
 
 /* ── text overlays (existing lines) ── */
+/* A decoded span is gibberish when the font's byte->Unicode map is broken.
+   Detect the common signatures (no vowels, one dominating glyph, the D/T/F stub
+   alphabet dominating, or an unbroken 30+ character run) and treat the glyphs as
+   placeholders: hide the mask so the legible source pixels show through, blank
+   the overlay text, and let the user retype over the exact position. */
+function edLooksMojibake(t) {
+  const s = String(t || '').trim();
+  if (s.length < 16) return false;
+  const letters = s.replace(/[^A-Za-z]/g, '');
+  if (letters.length >= 12) {
+    const u = letters.toUpperCase();
+    if (!/[AEIOU]/.test(u)) return true;
+    const counts = Object.create(null);
+    let maxF = 0, exotic = 0;
+    for (const ch of u) {
+      counts[ch] = (counts[ch] || 0) + 1;
+      if (counts[ch] > maxF) maxF = counts[ch];
+      if (ch === 'D' || ch === 'T' || ch === 'F') exotic++;
+    }
+    if (maxF / letters.length > 0.42) return true;
+    if (exotic / letters.length > 0.55) return true;
+  }
+  if (s.length > 30 && !/\s/.test(s)) return true;
+  return false;
+}
+
 function positionTextOverlay(el) {
   const s = EDITOR.scale;
   if (el.dataset.kind === 'line') {
     const rect = JSON.parse(el.dataset.rect);
+    const rectH = Math.max(1, rect[3] - rect[1]);
+    const clSize = Math.min(Number(el.dataset.size) || 12, Math.max(6, rectH * 1.15));
     if (el._mask) {
       Object.assign(el._mask.style, {
         left: rect[0] * s - 2 + 'px',
@@ -1637,7 +1665,7 @@ function positionTextOverlay(el) {
       left: rect[0] * s + 'px',
       top: rect[1] * s - 1 + 'px',
       height: Math.max(14, (rect[3] - rect[1]) * s + 3) + 'px',
-      fontSize: Number(el.dataset.size) * s + 'px',
+      fontSize: clSize * s + 'px',
     });
     el.style.lineHeight = el.style.height;
     edAutosizeLine(el);
@@ -1657,7 +1685,12 @@ const _measureCtx = (typeof document !== 'undefined' && document.createElement)
   ? document.createElement('canvas').getContext('2d') : null;
 function edTextWidth(el) {
   const s = EDITOR.scale;
-  const size = Number(el.dataset.size || 12) * s;
+  let wPts = Number(el.dataset.size || 12);
+  try {
+    const r = JSON.parse(el.dataset.rect || 'null');
+    if (r && r.length === 4) wPts = Math.min(wPts, Math.max(6, (r[3] - r[1]) * 1.15));
+  } catch (_) {}
+  const size = wPts * s;
   const weight = el.dataset.bold === '1' ? '700' : '400';
   const style = el.dataset.italic === '1' ? 'italic ' : '';
   const fam = ({ sans: "'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -1729,9 +1762,19 @@ function edBuildTextLines() {
     el.dataset.orig = span.text;
     el.dataset.rect = JSON.stringify(span.rect);
     el.dataset.origin = JSON.stringify(span.origin);
-    el.dataset.size = span.size; el.dataset.color = span.color; el.dataset.family = spanFam;
+    const _rectH = Array.isArray(span.rect) && span.rect.length === 4 ? Math.max(1, span.rect[3] - span.rect[1]) : 12;
+    const _clSize = Math.min(Math.max(4, Number(span.size) || 12), Math.max(6, _rectH * 1.15));
+    el.dataset.size = _clSize; el.dataset.color = span.color; el.dataset.family = spanFam;
     el.dataset.bold = span.bold ? '1' : '0'; el.dataset.italic = span.italic ? '1' : '0';
     if (span.color) el.style.color = span.color;
+    if (edLooksMojibake(span.text)) {
+      // source font is undecodable — show the source pixels, blank the glyphs,
+      // keep the line selectable/editable so the user can retype it
+      mask.style.display = 'none';
+      el.classList.add('unmapped');
+      el.title = "This line's font can't be decoded (placeholder glyphs). Retype the text to replace it.";
+      el.addEventListener('input', () => { el.classList.remove('unmapped'); el._mask = mask; }, { once: true });
+    }
     el._mask = mask;
     el.addEventListener('input', () => { EDITOR.dirty = true; el.dataset.changed = '1'; edAutosizeLine(el); });
     el.addEventListener('focus', () => edSelect(el));
